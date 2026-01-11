@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมจับผิดภาพ มหาสนุก - โรงเรียนบ้านใหม่วัฒนา</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #FFC107;
+            --bg-color: #E0F7FA;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Mali', cursive;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: var(--text-color);
+            user-select: none;
+        }
+
+        header {
+            background-color: #fff;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-bottom: 5px solid var(--primary-color);
+            background-image: linear-gradient(to bottom, #ffffff, #f0f9ff);
+            
+            /* จัดกึ่งกลาง Flexbox เพื่อให้โลโก้อยู่คู่ข้อความสวยๆ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px; /* ระยะห่างระหว่างโลโก้กับข้อความ */
+        }
+
+        /* --- ส่วนโลโก้ --- */
+        .logo-img {
+            width: 80px;  /* ปรับขนาดโลโก้ตรงนี้ */
+            height: auto;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1));
+            transition: transform 0.3s;
+        }
+        
+        .logo-img:hover {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+
+        .game-title-main {
+            font-size: 1.8rem;
+            color: #FF5722;
+            margin: 5px 0 0 0;
+            text-shadow: 2px 2px 0px #FFCCBC;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-5px);}
+            60% {transform: translateY(-3px);}
+        }
+
+        .sub-header {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .teacher-name {
+            color: #E91E63;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        #game-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 2px solid #B2EBF2;
+        }
+
+        .images-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .img-box {
+            position: relative;
+            border: 5px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            overflow: hidden;
+            cursor: crosshair;
+            transition: transform 0.2s;
+        }
+        
+        .img-box:active {
+            transform: scale(0.99);
+        }
+
+        .img-box img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            width: 500px; 
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column; /* มือถือให้โลโก้อยู่บน */
+                text-align: center;
+            }
+            .header-text {
+                text-align: center;
+            }
+            .img-box img {
+                width: 100%;
+            }
+            .game-title-main {
+                font-size: 1.5rem;
+            }
+        }
+
+        .circle-mark {
+            position: absolute;
+            border: 3px solid #FF0000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0); }
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            animation: slideDown 0.5s;
+            max-width: 80%;
+            border: 5px solid var(--secondary-color);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Mali', cursive;
+            margin-top: 15px;
+            box-shadow: 0 4px #2E7D32;
+            transition: all 0.1s;
+        }
+
+        button:active {
+            box-shadow: 0 2px #2E7D32;
+            transform: translateY(2px);
+        }
+
+        #debug-coords {
+            display: none;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: #0f0;
+            padding: 5px;
+            font-size: 12px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.png" alt="ตราโรงเรียน" class="logo-img" onerror="this.style.display='none'">
+        
+        <div class="header-text">
+            <h1>โรงเรียนบ้านใหม่วัฒนา</h1>
+            <div class="sub-header">วิชาคอมพิวเตอร์ | สอนโดย: <span class="teacher-name">ครูขันทอง โพธิ์เตี้ย</span></div>
+            <h2 class="game-title-main">✨ จับผิดภาพ มหาสนุก ✨</h2>
+        </div>
+    </header>
+
+    <audio id="sound-correct" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3" preload="auto"></audio>
+    <audio id="sound-win" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
+
+    <div id="game-container">
+        <div class="status-bar">
+            <div>ด่านที่: <span id="level-display">1</span>/5</div>
+            <div>หาเจอแล้ว: <span id="score-display">0</span>/<span id="target-display">3</span> จุด</div>
+        </div>
+
+        <div class="images-wrapper">
+            <div class="img-box">
+                <img id="img-a" src="" alt="Image A">
+                <div id="overlay-a"></div> 
+            </div>
+            <div class="img-box" id="click-area">
+                <img id="img-b" src="" alt="Image B">
+                <div id="overlay-b"></div> 
+            </div>
+        </div>
+        
+        <p style="color: #777; font-size: 0.9rem; margin-top:20px;">
+            คำแนะนำ: น้องๆ ช่วยหาจุดที่แตกต่างกันในรูปทางขวามือ (หรือด้านล่าง) แล้วแตะเลย!
+        </p>
+    </div>
+
+    <div id="win-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--primary-color);">เก่งมากครับ! 🎉</h2>
+            <p>ผ่านด่านแล้ว ไปด่านต่อไปกันเลย</p>
+            <button onclick="nextLevel()">ไปด่านต่อไป ▶</button>
+        </div>
+    </div>
+
+    <div id="end-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: #FF9800;">สุดยอดไปเลย! 🏆</h2>
+            <p>น้องๆ หาเจอครบทุกด่านแล้ว</p>
+            <p>วิชาคอมพิวเตอร์ โรงเรียนบ้านใหม่วัฒนา</p>
+            <button onclick="restartGame()">เล่นใหม่อีกครั้ง ↺</button>
+        </div>
+    </div>
+    
+    <div id="debug-coords">X: 0, Y: 0</div>
+
+    <script>
+        // --- การตั้งค่าเกม ---
+        const levels = [
+            {
+                imgA: 'level1_a.png',
+                imgB: 'level1_b.png',
+                differences: [
+                    { x: 273, y: 416, r: 51 }, 
+                    { x: 116, y: 116, r: 51 }, 
+                    { x: 549, y: 68, r: 51 }, 
+                ]
+            },
+            {
+                imgA: 'level2_a.png',
+                imgB: 'level2_b.png',
+                differences: [
+                    { x: 485, y: 479, r: 51 }, 
+                    { x: 167, y: 234, r: 51 }, 
+                    { x: 483, y: 162, r: 51 },
+                ]
+            },
+            {
+                imgA: 'level3_a.png',
+                imgB: 'level3_b.png',
+                differences: [
+                    { x: 95, y: 200, r: 51 }, 
+                    { x: 439, y: 272, r: 51 }, 
+                    { x: 276, y: 23, r: 51 }, 
+                ]
+            },
+            {
+                imgA: 'level4_a.png',
+                imgB: 'level4_b.png',
+                differences: [
+                    { x: 115, y: 157, r: 51 }, 
+                    { x: 422, y: 423, r: 51 }, 
+                    { x: 292, y: 145, r: 51 }, 
+                ]
+            },
+            {
+                imgA: 'level5_a.png',
+                imgB: 'level5_b.png',
+                differences: [
+                    { x: 184, y: 334, r: 51 }, 
+                    { x: 403, y: 86, r: 51 }, 
+                    { x: 307, y: 246, r: 51 }, 
+                ]
+            }
+        ];
+
+        // --- ตัวแปรระบบ ---
+        let currentLevel = 0;
+        let foundCount = 0;
+        let foundList = []; 
+        const targetCount = 3; 
+        const debugMode = false; 
+
+        // Elements
+        const imgA = document.getElementById('img-a');
+        const imgB = document.getElementById('img-b');
+        const overlayA = document.getElementById('overlay-a');
+        const overlayB = document.getElementById('overlay-b');
+        const clickArea = document.getElementById('click-area');
+        
+        const soundCorrect = document.getElementById('sound-correct');
+        const soundWin = document.getElementById('sound-win');
+        
+        function loadLevel(levelIndex) {
+            currentLevel = levelIndex;
+            foundCount = 0;
+            foundList = [];
+            
+            document.getElementById('level-display').innerText = currentLevel + 1;
+            document.getElementById('score-display').innerText = 0;
+            document.getElementById('target-display').innerText = targetCount;
+            
+            overlayA.innerHTML = '';
+            overlayB.innerHTML = '';
+            
+            imgA.src = levels[currentLevel].imgA;
+            imgB.src = levels[currentLevel].imgB;
+        }
+
+        function checkDifference(e) {
+            const rect = imgB.getBoundingClientRect();
+            const scaleX = imgB.naturalWidth / rect.width;
+            const scaleY = imgB.naturalHeight / rect.height;
+            const clickX = (e.clientX - rect.left) * scaleX;
+            const clickY = (e.clientY - rect.top) * scaleY;
+
+            if(debugMode) {
+                document.getElementById('debug-coords').style.display = 'block';
+                document.getElementById('debug-coords').innerText = `X: ${Math.round(clickX)}, Y: ${Math.round(clickY)}`;
+            }
+
+            const levelData = levels[currentLevel];
+            let isFound = false;
+
+            levelData.differences.forEach((diff, index) => {
+                if (!foundList.includes(index)) {
+                    const dist = Math.sqrt(Math.pow(clickX - diff.x, 2) + Math.pow(clickY - diff.y, 2));
+                    
+                    if (dist < diff.r) {
+                        foundDifference(diff, index, rect.width / imgB.naturalWidth);
+                        isFound = true;
+                    }
+                }
+            });
+        }
+
+        function foundDifference(diff, index, currentScale) {
+            foundCount++;
+            foundList.push(index);
+            document.getElementById('score-display').innerText = foundCount;
+
+            createCircle(diff, overlayA, currentScale);
+            createCircle(diff, overlayB, currentScale);
+
+            // เล่นเสียง
+            playSound(soundCorrect);
+
+            if (foundCount >= targetCount) {
+                setTimeout(() => {
+                    playSound(soundWin);
+                }, 300);
+
+                setTimeout(() => {
+                    if (currentLevel < levels.length - 1) {
+                        document.getElementById('win-modal').style.display = 'flex';
+                    } else {
+                        document.getElementById('end-modal').style.display = 'flex';
+                    }
+                }, 1000);
+            }
+        }
+        
+        function playSound(audioElement) {
+            if(audioElement) {
+                audioElement.currentTime = 0;
+                // Chrome ต้องการให้ user interact ก่อนเสียงถึงจะดัง ซึ่งในเกมนี้ user คลิกอยู่แล้ว จึงน่าจะดังปกติ
+                var playPromise = audioElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        // Playback started
+                    }).catch(error => {
+                        console.log("Audio play failed: ", error);
+                    });
+                }
+            }
+        }
+
+        function createCircle(diff, container, scale) {
+            const circle = document.createElement('div');
+            circle.className = 'circle-mark';
+            circle.style.width = (diff.r * 2 * scale) + 'px';
+            circle.style.height = (diff.r * 2 * scale) + 'px';
+            circle.style.left = (diff.x * scale) + 'px';
+            circle.style.top = (diff.y * scale) + 'px';
+            container.appendChild(circle);
+        }
+
+        function nextLevel() {
+            document.getElementById('win-modal').style.display = 'none';
+            loadLevel(currentLevel + 1);
+        }
+
+        function restartGame() {
+            document.getElementById('end-modal').style.display = 'none';
+            loadLevel(0);
+        }
+
+        clickArea.addEventListener('mousedown', checkDifference);
+
+        loadLevel(0);
+
+    </script>
+</body>
+</html>
